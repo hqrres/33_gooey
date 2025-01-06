@@ -45,7 +45,7 @@ export default function Hero() {
       },
       LIQUID: {
         octaves: 8,
-        edge: 0.3,
+        edge: 0.4,
         cellFactor: 4,
       },
     };
