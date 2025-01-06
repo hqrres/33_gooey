@@ -44,9 +44,9 @@ export default function Hero() {
         cellFactor: 4,
       },
       LIQUID: {
-        octaves: 1,
-        edge: 0.03,
-        cellFactor: 2,
+        octaves: 8,
+        edge: 0.3,
+        cellFactor: 4,
       },
     };
 
@@ -65,7 +65,7 @@ export default function Hero() {
 
     /* create the turbulence effect we need for the map texture */
     const turbulence = effects.turbulence({
-      noise: noise.simplex,
+      noise: noise.perlinNoise, // simplex, perlin, white, fbm
       frequency,
       isFractal,
     });
@@ -133,7 +133,7 @@ export default function Hero() {
           }
 
           /* you can reduce time factor for slower transition, or increase for faster */
-          const progress = easeOutCubic(time * (DYNAMIC ? 2e-4 : 4e-4));
+          const progress = easeOutCubic(time * 2e-4);
           dissolve.progress = progress;
 
           if (progress * 100 >= 99.9) {
