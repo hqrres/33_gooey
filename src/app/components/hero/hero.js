@@ -6,7 +6,6 @@ import Stats from 'stats.js';
 
 export default function Hero() {
   const [progress, setProgress] = useState(0);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     // Initialize stats.js
@@ -27,15 +26,13 @@ export default function Hero() {
       });
     };
 
-    const imagePaths = [
-      '/img/img_1.jpg',
-      '/img/img_2.jpg',
-      '/img/img_3.jpg',
-      '/img/img_4.jpg',
-      '/img/img_5.jpg'
-    ];
+    const imageFromSrc = '/img/img_1.jpg'; // Your initial image path
+    const imageToSrc = '/img/img_2.jpg'; // Your target image path
 
-    const loadImages = imagePaths.map(loadImage);
+    const promisedImages = [
+      loadImage(imageFromSrc),
+      loadImage(imageToSrc),
+    ];
 
     const turbulence = kampos.effects.turbulence({ noise: kampos.noise.perlinNoise });
 
@@ -63,36 +60,33 @@ export default function Hero() {
     const target = document.getElementById('target');
     const hippo = new kampos.Kampos({ target, effects: [dissolve] });
 
-    Promise.all(loadImages).then((images) => {
-      const playTransition = (index) => {
-        const fromImage = images[index];
-        const toImage = images[(index + 1) % images.length];
+    Promise.all(promisedImages).then(([fromImage, toImage]) => {
+      hippo.setSource({ media: fromImage, width: WIDTH, height: HEIGHT });
+      dissolve.to = toImage;
+    }).then(() => {
+      let direction = 1; // 1 for increasing, -1 for decreasing
+      hippo.play((time) => {
+        stats.begin(); // Start measuring
 
-        hippo.setSource({ media: fromImage, width: WIDTH, height: HEIGHT });
-        dissolve.to = toImage;
+        // Create a linear wave effect
+        const speedFactor = 0.001; // Adjust this to control the speed
+        let progressValue = dissolve.progress + direction * speedFactor;
+        
+        if (progressValue >= 1) {
+          progressValue = 1;
+          direction = -1; // Switch to decreasing
+        } else if (progressValue <= 0) {
+          progressValue = 0;
+          direction = 1; // Switch to increasing
+        }
 
-        hippo.play((time) => {
-          stats.begin(); // Start measuring
+        dissolve.progress = progressValue;
+        setProgress(progressValue * 100); // Update progress state
 
-          const speedFactor = 2e-4; // Adjust this to control the speed
-          const progressValue = Math.abs(Math.sin(time * speedFactor));
-          dissolve.progress = progressValue;
-          setProgress(progressValue * 100); // Update progress state
-
-          if (progressValue < 0.01 || progressValue > 0.99) {
-            setTimeout(() => {
-              setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-              playTransition((index + 1) % images.length);
-            }, 2000); // Pause for 2 seconds before transitioning to the next image
-          }
-
-          stats.end(); // End measuring
-        });
-      };
-
-      playTransition(currentImageIndex);
+        stats.end(); // End measuring
+      });
     });
-  }, [currentImageIndex]);
+  }, []);
 
   return (
     <div className="relative h-[600px] w-full flex flex-col justify-center items-center">

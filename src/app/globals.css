@@ -13,3 +13,8 @@ body {
   color: var(--color-text);
   font-family: var(--font-kaisei-tokumin);
 }
+
+.transition-effect {
+    transition: all 0.3s ease-in-out;
+    /* other transition-related styles */
+}
